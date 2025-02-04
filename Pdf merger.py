@@ -5,9 +5,15 @@ import os
 import ctypes
 from pdf2image import convert_from_path
 from PIL import Image, ImageTk
+import subprocess as sp
+import sys
 
 
-ctypes.windll.shcore.SetProcessDpiAwareness(1)
+try:
+    ctypes.windll.shcore.SetProcessDpiAwareness(1)
+except AttributeError:
+    pass  # Ignore errors on non-Windows systems
+
 
 class FileUploader:
     def __init__(self, root):
@@ -20,6 +26,7 @@ class FileUploader:
         self.pages_img = {}
         self.pages_pdf = {}
         self.new_order = []
+        
         
     
     def setup_ui(self):
@@ -71,7 +78,7 @@ class FileUploader:
         right_frame.columnconfigure(0, weight=1)
 
         # Preview Canvas
-        self.preview_canvas = tk.Canvas(right_frame, bg="lightgray", width=200, height=500)
+        self.preview_canvas = tk.Canvas(right_frame, bg="lightgray", width=325)
         self.preview_canvas.grid(row=0, column=0, sticky="nsew")
 
         # Vertical Scrollbar for the Canvas
@@ -112,59 +119,246 @@ class FileUploader:
         self.instructions = tk.Label(left_frame, text="Your input should be in the form of 1,2,3,...,10,11,12 \n with each number correlating to a page \n and the order indicating the order of pages", font=("Helvetica", 10))
         self.instructions.grid(row=1, column=0, sticky="n", pady=(0, 20))
         
-        self.input_order = tk.Entry(left_frame, width=50)
+        self.input_order = tk.Text(left_frame, width=40, height=3, wrap="word")
         self.input_order.grid(row=2, column=0, sticky="n", pady=(0, 20))
         
+        
+        self.page_order = list(self.pages_pdf.keys())  # Ensure page order includes all uploaded files
+
+
+        self.input_order.insert("1.0", ",".join(map(str, self.page_order)))  
+ 
+        
+        self.num_index_display = tk.Label(left_frame, text=f"You should have {len(self.page_order)} indices", font=("Helvetica", 10))
+        self.num_index_display.grid(row=3, column=0, sticky="n", pady=(0, 20))
+        
         self.name_instructions = tk.Label(left_frame, text="Please enter the name of the file you would like to save", font=("Helvetica", 10))
-        self.name_instructions.grid(row=3, column=0, sticky="n", pady=(0, 20))
+        self.name_instructions.grid(row=4, column=0, sticky="n", pady=(0, 20))
         
         self.input_name = tk.Entry(left_frame, width=50)
-        self.input_name.grid(row=4, column=0, sticky="n", pady=(0, 20))
+        self.input_name.grid(row=5, column=0, sticky="n", pady=(0, 20))
         
-        submit_button = tk.Button(left_frame, text="Submit", command=self.process_input, width=10)
-        submit_button.grid(row=5, column=0, padx=20, pady=10)
         
-        self.btn_preview = tk.Button(left_frame, text="Preview", command=self.preview_pdf, width=10)
-        self.btn_preview.grid(row=6, column=0, sticky="n", pady=(0, 10))
+        
+        
+        self.status_message = tk.Label(left_frame, text="", fg="red", font=("Helvetica", 10))
+        self.status_message.grid(row=6, column=0, sticky="n", pady=(0, 10))
+        
+        self.btn_preview = tk.Button(left_frame, text="Preview", command=lambda: self.preview_pdf(0), width=10)
+        self.btn_preview.grid(row=7, column=0, sticky="n", pady=(0, 10))
+
+        
+        self.reset_button = tk.Button(left_frame, text="Reset", command=self.reset_main, width=10)
+        self.reset_button.grid(row=8, column=0, sticky="n", pady=(0, 10))
         
         self.btn_back = tk.Button(left_frame, text="Back", command=self.setup_ui, width=10)
-        self.btn_back.grid(row=7, column=0, sticky="n", pady=(0, 10))
+        self.btn_back.grid(row=9, column=0, sticky="n", pady=(0, 10))
         
         self.btn_merge = tk.Button(left_frame, text="Merge", command=self.merge_files, width=10)
-        self.btn_merge.grid(row=8, column=0, sticky="n", pady=(0, 10))
+        self.btn_merge.grid(row=10, column=0, sticky="n", pady=(0, 10))
+    
+    
+    def reset_main(self):
         
+        self.preview_pdf(1)
+        
+    def update_status_message(self, message, color="red"):
+        """Updates the status message label with the given message and color."""
+        self.status_message.config(text=message, fg=color)
+   
            
     def process_input(self):
-        self.new_order = list(self.input_order.get())
-        self.new_order = [int(i) for i in self.new_order if i != ","]
-        user_input_name = self.input_name.get()
-        print("User input:", self.new_order, user_input_name)
-        print(type(self.new_order))
-        print(type(user_input_name))
-        # Now you can store or use the user_input variable as needed
+        try:
+            # Get input from the Text widget
+            raw_input = self.input_order.get("1.0", "end-1c").strip()  # Extracts all input text and removes trailing newlines/spaces
+
+            if not raw_input:
+                raise ValueError("No page order provided.")
+
+            # Convert input into a list of integers
+            self.new_order = [int(x.strip()) for x in raw_input.split(",") if x.strip().isdigit()]
+
+            # Check if the provided indices are within a valid range
+            total_pages = len(self.pages_pdf)
+
+            if not self.new_order:
+                raise ValueError("Invalid input. Please enter numbers separated by commas.")
+
+            if any(i < 1 or i > total_pages for i in self.new_order):
+                raise ValueError(f"Invalid page numbers detected. Please enter numbers between 1 and {total_pages}.")
+
+            if len(self.new_order) != total_pages:
+                raise ValueError(f"Incorrect number of indices. You provided {len(self.new_order)}, but {total_pages} pages exist.")
+
+            self.update_status_message("Order input is valid.", color="green")
+
+        except ValueError as e:
+            self.update_status_message(str(e), color="red")
+            self.new_order = []  # Reset to avoid processing invalid input
+
+
+
+
+    def ending_screen(self):
+        self.lbl_status_list.destroy()
+        self.btn_next.destroy()
+        self.introduction.destroy()
+        self.btn_upload.destroy()
+        self.btn_reset.destroy()
+        self.lbl_status.destroy()
+        self.lbl_status_list.destroy()
+        self.instructions.destroy()
+        self.input_order.destroy()
+        self.name_instructions.destroy()
+        self.input_name.destroy()
+        self.num_index_display.destroy()
+        self.status_message.destroy()
+        self.btn_preview.destroy()
+        self.reset_button.destroy()
+        self.btn_back.destroy()
+        self.btn_merge.destroy()
         
+        self.end_frame = tk.Frame(self.root)
+        self.end_frame.grid(row=0, column=0, sticky="nsew", padx=20, pady=20)
+        self.end_frame.columnconfigure(0, weight=1)
+        # Let the listbox expand to fill available vertical space.
+        self.end_frame.rowconfigure(6, weight=1)
+        
+        self.end_message = tk.Label(self.end_frame, text="Thank you for using the PDF Merger", font=("Helvetica", 12))
+        self.end_message.grid(row=0, column=0, sticky="n", pady=(0, 20))
+        
+        self.end_message2 = tk.Label(self.end_frame, text="Please click the button below to close the application", font=("Helvetica", 12))
+        self.end_message2.grid(row=1, column=0, sticky="n", pady=(0, 20))
+        
+        self.close_button = tk.Button(self.end_frame, text="Close", command=self.close, width=10)
+        self.close_button.grid(row=2, column=0, sticky="n", pady=(0, 10))    
+
+
     def merge_files(self):
-        None
-        
-    def preview_pdf(self):
-        self.process_input()  
-        self.clear_preview()
-        for i in self.new_order:
-            img = self.pages_img[i]
-            img_tk = ImageTk.PhotoImage(img)
-            self.pdf_previews[f"{i}"] = img_tk
-            lbl_preview = tk.Label(self.preview_box, image=img_tk)
-            lbl_preview.pack(side="top", padx=10, pady=10)
-            self.preview_box.update_idletasks()
-            self.preview_canvas.configure(scrollregion=self.preview_canvas.bbox("all"))
-        
+        self.process_input()
+
+        if not self.new_order:
+            self.update_status_message("Error: Invalid page order. Please check your input and try again.", color="red")
+            return
+
+        writer = PdfWriter()
+
+        try:
+            for i in self.new_order:
+                if i in self.pages_pdf:
+                    pdf_path = self.pages_pdf[i]
+                    with open(pdf_path, "rb") as f:
+                        pdf_reader = PdfReader(f)
+                        writer.add_page(pdf_reader.pages[0])  # Properly re-opens the file
+
+                else:
+                    self.update_status_message(f"Warning: Page {i} not found in pages_pdf.", color="orange")
+
+            output_filename = self.input_name.get().strip()
+            if not output_filename:
+                self.update_status_message("Error: No filename provided.", color="red")
+                return
+            
+            if not output_filename.endswith(".pdf"):
+                output_filename += ".pdf"
+
+            abs_path = os.path.abspath(output_filename)
+
+            with open(abs_path, "wb") as f:
+                writer.write(f)
+
+            self.update_status_message(f"PDF successfully saved as {abs_path}", color="green")
+
+            # Open the merged PDF in the default viewer
+            if sys.platform.startswith("win"):  # Windows
+                os.startfile(abs_path)
+            elif sys.platform.startswith("linux"):  # Linux
+                sp.run(["xdg-open", abs_path])
+            elif sys.platform.startswith("darwin"):  # macOS
+                sp.run(["open", abs_path])
+            # Cleanup temp files
+            for temp_file in self.uploaded_files:
+                if os.path.exists(temp_file):
+                    os.remove(temp_file)
+
+            self.uploaded_files = []  # Clear the list
+
                 
-             
+            self.ending_screen()
+
+        except Exception as e:
+            self.update_status_message(f"Error while merging PDFs: {e}", color="red")
+
+
+
+            
+    def preview_pdf(self, counter):
+        
+        self.process_input()
+        if not self.new_order:
+            
+            self.update_status_message("Error: Invalid page order. Please check your input.", color="red")
+            return
+        
+        
+        self.clear_preview()
+        try:
+            if counter == 0:
+                for i in self.new_order:
+                    if i not in self.pages_img:
+                        self.update_status_message(f"Warning: Page {i} preview not found.")
+                        continue
+
+                    img = self.pages_img[i]
+                    img_tk = ImageTk.PhotoImage(img)
+                    self.pdf_previews[f"{i}"] = img_tk
+
+                    # Add index label
+                    num_label = tk.Label(self.preview_box, text=f"Page {i}", font=("Arial", 10, "bold"))
+                    num_label.pack(side="top", pady=2)
+
+                    lbl_preview = tk.Label(self.preview_box, image=img_tk)
+                    lbl_preview.pack(side="top", padx=10, pady=10)
+
+                    self.preview_box.update_idletasks()
+                    self.preview_canvas.configure(scrollregion=self.preview_canvas.bbox("all"))
+
+            elif counter == 1:
+                for i in range(1, len(self.new_order) + 1):
+                    if i not in self.pages_img:
+                        print(f"Warning: Page {i} preview not found.")
+                        continue
+
+                    img = self.pages_img[i]
+                    img_tk = ImageTk.PhotoImage(img)
+                    self.pdf_previews[f"{i}"] = img_tk
+
+                    # Add index label
+                    num_label = tk.Label(self.preview_box, text=f"Page {i}", font=("Arial", 10, "bold"))
+                    num_label.pack(side="top", pady=2)
+
+                    lbl_preview = tk.Label(self.preview_box, image=img_tk)
+                    lbl_preview.pack(side="top", padx=10, pady=5)
+
+                    self.preview_box.update_idletasks()
+                    self.preview_canvas.configure(scrollregion=self.preview_canvas.bbox("all"))
+
+        except Exception as e:
+            print(f"Error while generating preview: {e}")
+
+
     def process_uploads(self):
-        self.pages_img = {}
-        self.pages_pdf = {}
-        counter = 1
-        counter_pdf = 1
+        if not hasattr(self, 'pages_img'):
+            self.pages_img = {}
+        if not hasattr(self, 'pages_pdf'):
+            self.pages_pdf = {}
+
+        counter = len(self.page_order) + 1  # Maintain numbering across uploads
+        counter_pdf = len(self.pages_pdf) + 1  # Maintain numbering across PDFs
+
+        self.page_order = sorted(set(self.page_order) | set(self.pages_img.keys()) | set(self.pages_pdf.keys()))
+
+        
         for filename, filepath in self.files.items():
             if filepath.endswith(".pdf"):
                 read = PdfReader(filepath)
@@ -175,11 +369,13 @@ class FileUploader:
                 
                 images = convert_from_path(filepath, dpi=100)
                 for img in images:
+                    
                     img.thumbnail((400, 500))  # Resize for preview
                     img_tk = ImageTk.PhotoImage(img)
                     # Store image reference to prevent garbage collection
                     self.pdf_previews[f"{filename} {counter}"] = img_tk
                     self.pages_img[counter] = img
+                    self.page_order.append(counter)
                     counter += 1
 
             elif filepath.endswith((".png", ".jpg", ".jpeg", ".gif")):
@@ -196,11 +392,9 @@ class FileUploader:
                 image.save(temp_pdf_path, "PDF", resolution=100.0)
                 
                 # Open the newly created PDF and store its first page.
-                with open(temp_pdf_path, "rb") as f:
-                    pdf_reader = PdfReader(f)
-                    # Assuming the saved PDF contains one page:
-                    page = pdf_reader.pages[0]
-                    self.pages_pdf[counter_pdf] = page
+                self.pages_pdf[counter_pdf] = temp_pdf_path  # Store the path instead of closing
+                self.uploaded_files.append(temp_pdf_path)  # Keep track of temp files
+
                 counter_pdf += 1
                 
                 img = Image.open(filepath)
@@ -210,11 +404,12 @@ class FileUploader:
                 # Store image reference to prevent garbage collection
                 self.pdf_previews[f"{filename} {counter}"] = img_tk
 
-
+                self.page_order.append(counter)
                 self.pages_img[counter] = img
                 counter += 1
 
-
+    def close(self):
+        self.root.destroy()
 
     def clear_preview(self):
         # Remove all widgets (images) from the preview_box frame
@@ -223,6 +418,7 @@ class FileUploader:
         # Optionally, if you are keeping references to the images,
         # clear that dictionary as well:
         self.pdf_previews.clear()
+        self.preview_canvas.update_idletasks()
 
 
     def get_pages(self, pdf):
@@ -232,22 +428,7 @@ class FileUploader:
             self.pages[counter] = page
             counter += 1
 
-            
 
-        
-    new_order = [1,2,3,4,18,5,6,7,8,9,10,11,12,13,14,15,16,17]
-
-
-    def rearrange_pages(pages, new_order):
-        writer = PdfWriter()
-
-        for i in new_order:
-            writer.add_page(pages[i])
-            
-        with open(f"combined.pdf", "wb") as f:
-            writer.write(f)
-
-        
     
     
     def upload_file(self):
@@ -261,13 +442,16 @@ class FileUploader:
         for filepath in file_paths:
             filename = os.path.basename(filepath)
             self.files[filename] = filepath  # Store file paths
+            
         
         # Process the uploaded files to populate pages_img and pdf_previews.
         self.process_uploads()
         
         # Now generate the preview display.
         
+        self.clear_preview()  # Clears old previews
         self.populate_previews_sequentially()
+
         
         self.lbl_status.destroy()
         
@@ -288,39 +472,10 @@ class FileUploader:
         
         
             
-    def generate_preview(self, filename, filepath):
-        """
-        Updated generate_preview: Display the preview images that have already
-        been created by process_uploads().
-        """
-        try:
-            # Iterate over all the keys (or you could filter by filename)
-            for key in self.pages_img:
-                # Retrieve the PIL image from pages_img and convert it to a PhotoImage
-                img = self.pages_img[key]
-                img_tk = ImageTk.PhotoImage(img)
-                
-                # Create a label with the image
-                lbl_preview = tk.Label(self.preview_box, image=img_tk)
-                lbl_preview.image = img_tk  # Keep a reference to prevent garbage collection
-                lbl_preview.pack(side="top", padx=10, pady=10)
-            
-            # Update the scroll region
-                self.preview_box.update_idletasks()  
-                self.root.update()
-                 
-            
-            self.preview_canvas.configure(scrollregion=self.preview_canvas.bbox("all"))
-        
-        except Exception as e:
-            print(f"Error generating preview for {filename}: {e}")
 
     def populate_previews_sequentially(self, keys=None, index=0, delay=100):
         """
-        Display preview images one by one with a delay.
-        :param keys: Sorted list of keys from pages_img.
-        :param index: Current index in the list.
-        :param delay: Delay in milliseconds between adding images.
+        Display preview images one by one with a delay, ensuring page numbers are visible above each slide.
         """
         if keys is None:
             keys = sorted(self.pages_img.keys())
@@ -328,15 +483,21 @@ class FileUploader:
             key = keys[index]
             img = self.pages_img[key]
             img_tk = ImageTk.PhotoImage(img)
+            
+            # Add a label for the index above the preview image
+            lbl_index = tk.Label(self.preview_box, text=f"Page {key}", font=("Arial", 10, "bold"))
+            lbl_index.pack(side="top", pady=2)
+
             lbl_preview = tk.Label(self.preview_box, image=img_tk)
             lbl_preview.image = img_tk  # Keep reference to avoid garbage collection
             lbl_preview.pack(side="top", padx=10, pady=10)
+
             self.preview_box.update_idletasks()
             self.preview_canvas.configure(scrollregion=self.preview_canvas.bbox("all"))
+
             # Schedule the next image after the specified delay
             self.root.after(delay, lambda: self.populate_previews_sequentially(keys, index + 1, delay))
-        else:
-            print("Finished displaying previews.")
+
 
       
         
@@ -399,6 +560,3 @@ root.resizable(True, True)
 root.mainloop()
 
 
-
-
-pdfs = ["First 3.pdf", "Audience Title Page.pdf", "Moodboard Title.pdf", "Individual Project Mood Board.pdf", "Wireframes Title.pdf", "Individual Project Wireframes.pdf", "Last 2.pdf"]
