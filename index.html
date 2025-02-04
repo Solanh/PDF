@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Spotify Script Runner</title>
+    <link rel="stylesheet" href="css/index-styles.css"> <!-- Ensure the correct path to your CSS -->
+</head>
+<body>
+    <div id="navbar-placeholder"></div> <!-- Navbar placeholder -->
+
+    <button type="button" id="run-button">Run</button>
+    <div id="loading-spinner" class="spinner" style="display: none;">Loading...</div> <!-- Loading spinner -->
+
+    <section class="parameters">
+        <div class="container">
+            <input type="checkbox" class="checkbox" id="createPlaylistSwitch">
+            <label class="switch" for="createPlaylistSwitch">
+                <span class="slider"></span>
+            </label>
+            <label for="createPlaylistSwitch">Create new playlist for album songs</label>
+        </div>
+    
+        <div class="container">
+            <input type="checkbox" class="checkbox" id="replaceLikedSongsSwitch">
+            <label class="switch" for="replaceLikedSongsSwitch">
+                <span class="slider"></span>
+            </label>
+            <label for="replaceLikedSongsSwitch">Replace liked songs playlist with album songs</label>
+        </div>
+    </section>
+
+
+    <script>
+        function loadNavbar() {
+            fetch('navbar.html')
+                .then(response => response.text())
+                .then(data => {
+                    document.getElementById('navbar-placeholder').innerHTML = data;
+                });
+        }
+
+        // Call the function to load the navbar
+        loadNavbar();
+
+        // Handle button click
+        document.getElementById('run-button').addEventListener('click', function () {
+            // Show the loading spinner
+            document.getElementById('loading-spinner').style.display = 'block';
+
+            // Start the login process by redirecting to the Flask login route
+            window.location.href = 'https://nameless-ocean-47665-871e4574a92b.herokuapp.com/login';
+        });
+
+        // Check if there's a query parameter indicating a callback
+        window.onload = function () {
+            const urlParams = new URLSearchParams(window.location.search);
+            const code = urlParams.get('code');
+
+            if (code) {
+                // If there's a 'code' param, send it to the Flask backend for token exchange
+                fetch('https://nameless-ocean-47665-871e4574a92b.herokuapp.com/callback?code=' + code, {
+                    method: 'GET',
+                    credentials: 'include',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.access_token) {
+                        // Store the token in local storage
+                        localStorage.setItem('spotify_access_token', data.access_token);
+                        alert("Logged in! Now running script...");
+                        // Call the function to add songs
+                        addSongsToSpotify(data.access_token);
+                    } else {
+                        alert('Error retrieving token.');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('Error: ' + error.message);
+                });
+            } else {
+                // No 'code', no callback, so no need to do anything
+                document.getElementById('loading-spinner').style.display = 'none';
+            }
+        };
+    </script>
+
+</body>
+</html>
