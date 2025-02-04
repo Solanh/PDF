@@ -3,12 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Spotify Script Runner</title>
-    <link rel="stylesheet" href="css/index-styles.css"> <!-- Ensure the correct path to your CSS -->
+    <title>PDF Merger</title>
+    <link rel="stylesheet" href="css/index-styles.css"> <!-- Ensure correct path to your CSS -->
 </head>
 <body>
     <div id="navbar-placeholder"></div> <!-- Navbar placeholder -->
 
+    <!-- Download Button -->
     <button type="button" id="download-windows">Download Windows</button>
     <div id="loading-spinner" class="spinner" style="display: none;">Loading...</div> <!-- Loading spinner -->
 
@@ -19,12 +20,12 @@
 
         // Simulate a delay (optional, for UX)
         setTimeout(() => {
-            // Replace with the actual file path or URL of your installer
-            var installerUrl = "C:\Users\Solan\OneDrive - Clark University\Clark\Personal Projects\PDF\PDFMergerSetup.exe";
+            // Replace with the actual hosted file URL
+            var installerUrl = "https://github.com/Solanh/PDF/releases/tag/v1.0.0/PDFMergerSetup.exe"; // FIXED
 
             var a = document.createElement("a");
             a.href = installerUrl;
-            a.download = "PDFMergerSetup.exe"; // Optional: Suggests a filename
+            a.download = "PDFMergerSetup.exe"; // Suggests a filename
             document.body.appendChild(a);
             a.click();
             document.body.removeChild(a);
@@ -34,11 +35,8 @@
     });
     </script>
 
-
-    
-
-
     <script>
+        // Load the navbar dynamically
         function loadNavbar() {
             fetch('navbar.html')
                 .then(response => response.text())
@@ -46,55 +44,9 @@
                     document.getElementById('navbar-placeholder').innerHTML = data;
                 });
         }
+        loadNavbar(); // Call function to load navbar
 
-        // Call the function to load the navbar
-        loadNavbar();
-
-        // Handle button click
-        document.getElementById('run-button').addEventListener('click', function () {
-            // Show the loading spinner
-            document.getElementById('loading-spinner').style.display = 'block';
-
-            // Start the login process by redirecting to the Flask login route
-            window.location.href = 'https://nameless-ocean-47665-871e4574a92b.herokuapp.com/login';
-        });
-
-        // Check if there's a query parameter indicating a callback
-        window.onload = function () {
-            const urlParams = new URLSearchParams(window.location.search);
-            const code = urlParams.get('code');
-
-            if (code) {
-                // If there's a 'code' param, send it to the Flask backend for token exchange
-                fetch('https://nameless-ocean-47665-871e4574a92b.herokuapp.com/callback?code=' + code, {
-                    method: 'GET',
-                    credentials: 'include',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    }
-                })
-                .then(response => response.json())
-                .then(data => {
-                    if (data.access_token) {
-                        // Store the token in local storage
-                        localStorage.setItem('spotify_access_token', data.access_token);
-                        alert("Logged in! Now running script...");
-                        // Call the function to add songs
-                        addSongsToSpotify(data.access_token);
-                    } else {
-                        alert('Error retrieving token.');
-                    }
-                })
-                .catch(error => {
-                    console.error('Error:', error);
-                    alert('Error: ' + error.message);
-                });
-            } else {
-                // No 'code', no callback, so no need to do anything
-                document.getElementById('loading-spinner').style.display = 'none';
-            }
-        };
+        
     </script>
-
 </body>
 </html>
