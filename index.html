@@ -9,26 +9,33 @@
 <body>
     <div id="navbar-placeholder"></div> <!-- Navbar placeholder -->
 
-    <button type="button" id="run-button">Run</button>
+    <button type="button" id="download-windows">Download Windows</button>
     <div id="loading-spinner" class="spinner" style="display: none;">Loading...</div> <!-- Loading spinner -->
 
-    <section class="parameters">
-        <div class="container">
-            <input type="checkbox" class="checkbox" id="createPlaylistSwitch">
-            <label class="switch" for="createPlaylistSwitch">
-                <span class="slider"></span>
-            </label>
-            <label for="createPlaylistSwitch">Create new playlist for album songs</label>
-        </div>
+    <script>
+    document.getElementById("download-windows").addEventListener("click", function() {
+        var spinner = document.getElementById("loading-spinner");
+        spinner.style.display = "block"; // Show the loading spinner
+
+        // Simulate a delay (optional, for UX)
+        setTimeout(() => {
+            // Replace with the actual file path or URL of your installer
+            var installerUrl = "C:\Users\Solan\OneDrive - Clark University\Clark\Personal Projects\PDF\PDFMergerSetup.exe";
+
+            var a = document.createElement("a");
+            a.href = installerUrl;
+            a.download = "PDFMergerSetup.exe"; // Optional: Suggests a filename
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            
+            spinner.style.display = "none"; // Hide spinner after download starts
+        }, 1000); // Delay to show loading spinner
+    });
+    </script>
+
+
     
-        <div class="container">
-            <input type="checkbox" class="checkbox" id="replaceLikedSongsSwitch">
-            <label class="switch" for="replaceLikedSongsSwitch">
-                <span class="slider"></span>
-            </label>
-            <label for="replaceLikedSongsSwitch">Replace liked songs playlist with album songs</label>
-        </div>
-    </section>
 
 
     <script>
