@@ -11,7 +11,12 @@ import logging
 import subprocess
 
 # Configure logging
-LOG_FILE = "pdf_merger.log"
+# Determine a writable log directory
+log_dir = os.path.join(os.getenv("APPDATA"), "PDFMerger")  # Use AppData on Windows
+os.makedirs(log_dir, exist_ok=True)  # Create directory if it doesn't exist
+
+LOG_FILE = os.path.join(log_dir, "pdf_merger.log")  # Store log in AppData
+
 logging.basicConfig(
     filename=LOG_FILE,
     level=logging.DEBUG,  # Change to logging.INFO for fewer logs
@@ -19,7 +24,6 @@ logging.basicConfig(
     filemode="w"  # "w" overwrites on each run, change to "a" to append
 )
 
-# Log the start of the application
 logging.info("PDF Merger application started.")
 
 
