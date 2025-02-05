@@ -11,6 +11,7 @@
 
     <!-- Download Button -->
     <button type="button" id="download-windows">Download Windows</button>
+    <button type="button" id="download-mac">Download Mac</button>
     <div id="loading-spinner" class="spinner" style="display: none;"></div> <!-- Loading spinner -->
 
     <script>
@@ -21,11 +22,32 @@
         // Simulate a delay (optional, for UX)
         setTimeout(() => {
             // Replace with the actual hosted file URL
-            var installerUrl = "https://github.com/Solanh/PDF/releases/download/v1.0.0/Pdf-Merger.exe"; // FIXED
+            var installerUrl = "https://github.com/Solanh/PDF/releases/download/v1.0.0/PDFMerger-Windows.zip"; // FIXED
+            var macExeUrl = "https://github.com/Solanh/PDF/releases/download/v1.0.0/PDFMerger-macOS.zip"; // FIXED
 
             var a = document.createElement("a");
             a.href = installerUrl;
-            a.download = "PDFMergerSetup.exe"; // Suggests a filename
+            a.download = "PDFMerger.exe"; // Suggests a filename
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            
+            spinner.style.display = "none"; // Hide spinner after download starts
+        }, 1000); // Delay to show loading spinner
+    });
+    document.getElementById("download-mac").addEventListener("click", function() {
+        var spinner = document.getElementById("loading-spinner");
+        spinner.style.display = "block"; // Show the loading spinner
+
+        // Simulate a delay (optional, for UX)
+        setTimeout(() => {
+            // Replace with the actual hosted file URL
+            var installerUrl = "https://github.com/Solanh/PDF/releases/download/v1.0.0/PDFMerger-Windows.zip"; // FIXED
+            var macExeUrl = "https://github.com/Solanh/PDF/releases/download/v1.0.0/PDFMerger-macOS.zip"; // FIXED
+            
+            var a = document.createElement("a");
+            a.href = macExeUrl;
+            a.download = "PDFMerger.exe"; // Suggests a filename
             document.body.appendChild(a);
             a.click();
             document.body.removeChild(a);
