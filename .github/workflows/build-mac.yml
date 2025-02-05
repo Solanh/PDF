@@ -4,7 +4,7 @@ on: [push, workflow_dispatch]
 
 jobs:
   build:
-    runs-on: macos-latest  # This runs on GitHub's macOS machine
+    runs-on: macos-latest  # Runs on GitHub's macOS machine
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v3
@@ -24,7 +24,7 @@ jobs:
           pyinstaller --onefile --windowed --name "PDFMerger" pdf_merger.py
 
       - name: Upload Build Artifact
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: PDFMerger-macOS
           path: dist/PDFMerger
