@@ -7,7 +7,6 @@ on:
         - '**.py'
         - 'requirements.txt'
     workflow_dispatch:
-  
 
 jobs:
   build:
@@ -27,15 +26,16 @@ jobs:
           echo "Installing Poppler via Chocolatey..."
           choco install poppler --confirm
           
-          # Find Poppler location
+          # Find Poppler location using PowerShell
           echo "Finding Poppler path..."
-          POPPLER_PATH=$(where pdftoppm | findstr "poppler")
-          if [ -z "$POPPLER_PATH" ]; then
-            echo "Error: Poppler not found!"
+          $POPPLER_PATH = where.exe pdftoppm | Select-String -Pattern "poppler"
+          if (-not $POPPLER_PATH) {
+            Write-Host "Error: Poppler not found!"
             exit 1
-          fi
+          }
           echo "Found Poppler at: $POPPLER_PATH"
-          echo "POPPLER_PATH=$POPPLER_PATH" >> $GITHUB_ENV
+          echo "POPPLER_PATH=$POPPLER_PATH" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8
+        shell: pwsh
 
       - name: Build Windows Executable
         run: |
