@@ -4,6 +4,12 @@
 *.jpg
 *.jpeg
 
+
+build/
+dist/
+*.pkg
+
+
 # Ignore log files
 *.log
 
