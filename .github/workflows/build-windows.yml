@@ -26,15 +26,9 @@ jobs:
           echo "Installing Poppler via Chocolatey..."
           choco install poppler --confirm
           
-          # Find Poppler location using PowerShell
-          echo "Finding Poppler path..."
-          $POPPLER_PATH = where.exe pdftoppm | Select-String -Pattern "poppler"
-          if (-not $POPPLER_PATH) {
-            Write-Host "Error: Poppler not found!"
-            exit 1
-          }
-          echo "Found Poppler at: $POPPLER_PATH"
-          echo "POPPLER_PATH=$POPPLER_PATH" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8
+          echo "Manually setting Poppler path..."
+          echo "C:\ProgramData\chocolatey\lib\poppler\tools" >> $GITHUB_PATH
+          echo "POPPLER_PATH=C:\ProgramData\chocolatey\lib\poppler\tools" >> $GITHUB_ENV
         shell: pwsh
 
       - name: Build Windows Executable
