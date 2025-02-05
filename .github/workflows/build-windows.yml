@@ -1,5 +1,6 @@
 name: Build Windows App
 
+
 on:
     push:
       paths:
@@ -36,6 +37,7 @@ jobs:
             --add-data "C:\ProgramData\chocolatey\lib\poppler\tools;poppler" ^
             --icon="assets/MaskGroup.ico" ^
             --name "PDFMerger" Pdf-Merger.py
+
         shell: cmd
 
       - name: Upload Build Artifact
