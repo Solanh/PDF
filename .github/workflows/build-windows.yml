@@ -1,12 +1,13 @@
 name: Build Windows App
 
 on:
-  push:
-    paths:
-      - 'windows-build.yml'
-      - '**.py'
-      - 'requirements.txt'
-  workflow_dispatch:  # Allows manual runs
+    push:
+      paths:
+        - '.github/workflows/build-windows.yml'
+        - '**.py'
+        - 'requirements.txt'
+    workflow_dispatch:
+  
 
 jobs:
   build:
