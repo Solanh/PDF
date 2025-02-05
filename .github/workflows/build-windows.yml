@@ -28,13 +28,12 @@ jobs:
           
           echo "Manually setting Poppler path..."
           echo "C:\ProgramData\chocolatey\lib\poppler\tools" >> $GITHUB_PATH
-          echo "POPPLER_PATH=C:\ProgramData\chocolatey\lib\poppler\tools" >> $GITHUB_ENV
         shell: pwsh
 
       - name: Build Windows Executable
         run: |
           pyinstaller --windowed --onefile --clean ^
-            --add-data "%POPPLER_PATH%;." ^
+            --add-data "C:\ProgramData\chocolatey\lib\poppler\tools;poppler" ^
             --icon="assets/MaskGroup.ico" ^
             --name "PDFMerger" Pdf-Merger.py
         shell: cmd
