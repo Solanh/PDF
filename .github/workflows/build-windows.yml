@@ -17,14 +17,15 @@ jobs:
       - name: Install Dependencies
         run: |
           pip install pyinstaller pdf2image pypdf2 pillow
-          echo "Downloading and setting up Poppler..."
+          echo "Installing Poppler..."
           choco install poppler --confirm  # Install Poppler via Chocolatey
 
       - name: Build Windows Executable
         run: |
-          pyinstaller --windowed --onefile --clean --name "PDFMerger" `
-            --add-data "C:/Users/Solan/Downloads/Release-24.08.0-0/poppler-24.08.0/Library/bin;poppler-24.08.0/Library/bin" `
-            --icon="C:/Users/Solan/Downloads/pdf things/Mask group (1).ico" Pdf-Merger.py
+          pyinstaller --windowed --onefile --clean ^
+            --add-data "C:\Users\Solan\Downloads\Release-24.08.0-0\poppler-24.08.0\Library\bin;poppler-24.08.0\Library\bin" ^
+            --icon="C:\Users\Solan\Downloads\pdf things\Mask group (1).ico" ^
+            --name "PDFMerger" Pdf-Merger.py
         shell: cmd  # Run this step in CMD instead of PowerShell
 
       - name: Upload Build Artifact
