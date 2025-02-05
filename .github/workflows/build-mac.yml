@@ -21,7 +21,7 @@ jobs:
 
       - name: Build macOS App
         run: |
-          pyinstaller --onefile --windowed --name "PDFMerger" pdf_merger.py
+          pyinstaller --onefile --windowed --name "PDFMerger" Pdf-Merger.py
 
       - name: Upload Build Artifact
         uses: actions/upload-artifact@v4
