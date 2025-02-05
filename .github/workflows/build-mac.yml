@@ -1,0 +1,30 @@
+name: Build macOS App
+
+on: [push, workflow_dispatch]
+
+jobs:
+  build:
+    runs-on: macos-latest  # This runs on GitHub's macOS machine
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v3
+
+      - name: Set Up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.9"
+
+      - name: Install Dependencies
+        run: |
+          pip install pyinstaller pdf2image pypdf2 pillow
+          brew install poppler  # Install Poppler for PDF conversion
+
+      - name: Build macOS App
+        run: |
+          pyinstaller --onefile --windowed --name "PDFMerger" pdf_merger.py
+
+      - name: Upload Build Artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: PDFMerger-macOS
+          path: dist/PDFMerger
