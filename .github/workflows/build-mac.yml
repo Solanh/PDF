@@ -17,7 +17,7 @@ jobs:
       - name: Install Dependencies
         run: |
           pip install pyinstaller pdf2image pypdf2 pillow
-          brew install poppler  # Install Poppler for PDF conversion
+          brew install poppler  # Ensures Poppler is installed for PDF processing
 
       - name: Build macOS App
         run: |
@@ -27,4 +27,4 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: PDFMerger-macOS
-          path: dist/PDFMerger
+          path: dist/PDFMerger.app

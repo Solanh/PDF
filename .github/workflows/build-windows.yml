@@ -1,0 +1,34 @@
+name: Build Windows App
+
+on: [push, workflow_dispatch]
+
+jobs:
+  build:
+    runs-on: windows-latest  # Runs on GitHub's Windows machine
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v3
+
+      - name: Set Up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.9"
+
+      - name: Install Dependencies
+        run: |
+          pip install pyinstaller pdf2image pypdf2 pillow
+          echo "Downloading and setting up Poppler..."
+          choco install poppler --confirm  # Installs Poppler via Chocolatey
+
+      - name: Build Windows Executable
+        run: |
+          pyinstaller --windowed --onefile --clean ^
+            --add-data "C:\Users\Solan\Downloads\Release-24.08.0-0\poppler-24.08.0\Library\bin;poppler-24.08.0\Library\bin" ^
+            --icon="C:\Users\Solan\Downloads\pdf things\Mask group (1).ico" ^
+            --name "PDFMerger" Pdf-Merger.py
+
+      - name: Upload Build Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: PDFMerger-Windows
+          path: dist/PDFMerger.exe
