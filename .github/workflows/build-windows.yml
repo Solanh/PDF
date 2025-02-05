@@ -1,10 +1,16 @@
 name: Build Windows App
 
-on: [push, workflow_dispatch]
+on:
+  push:
+    paths:
+      - 'windows-build.yml'
+      - '**.py'
+      - 'requirements.txt'
+  workflow_dispatch:  # Allows manual runs
 
 jobs:
   build:
-    runs-on: windows-latest  # Runs on GitHub's Windows machine
+    runs-on: windows-latest
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v3
@@ -19,17 +25,21 @@ jobs:
           pip install pyinstaller pdf2image pypdf2 pillow
           echo "Installing Poppler via Chocolatey..."
           choco install poppler --confirm  # Install Poppler on GitHub Actions
-
-      - name: Set Poppler Path
-        run: echo "POPPLER_PATH=%ChocolateyInstall%\lib\poppler\tools" >> $GITHUB_ENV
+          
+          # Find Poppler location and make sure it's accessible
+          echo "Finding Poppler path..."
+          POPPLER_PATH=$(where pdftoppm | findstr "poppler")
+          echo "Found Poppler at: $POPPLER_PATH"
+          echo "POPPLER_PATH=$POPPLER_PATH" >> $GITHUB_ENV
 
       - name: Build Windows Executable
         run: |
           pyinstaller --windowed --onefile --clean ^
-            --add-data "%POPPLER_PATH%;poppler-24.08.0/Library/bin" ^
-            --icon="C:\Users\Solan\Downloads\pdf things\Mask group (1).ico" ^
+            --add-data "%POPPLER_PATH%;poppler-bin" ^
+            --icon="MaskGroup (1).ico" ^
             --name "PDFMerger" Pdf-Merger.py
-        shell: cmd  # Run in CMD to avoid PowerShell parsing issues
+        shell: cmd
+
 
       - name: Upload Build Artifact
         uses: actions/upload-artifact@v4
