@@ -11,7 +11,7 @@ body {
     font-family: 'Times New Roman', Times, serif; /* Set font to Times New Roman */
 }
 
-.download-windows button, .download-mac button {
+.download-windows , .download-mac  {
     margin: 20px 0; /* Combine top and bottom margins */
     padding: 10px 20px; /* Padding for better appearance */
     font-size: 16px;
@@ -23,7 +23,8 @@ body {
     transition: background-color 0.3s ease; /* Smooth hover effect */
 }
 
-.download-windows button:hover, .download-mac button:hover {    
+.download-windows:hover, .download-mac\
+:hover {    
     background-color: #45a049; /* Darker green on hover */
 }
 
