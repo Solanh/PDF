@@ -1,9 +1,8 @@
 *.pdf
 !important_document.pdf 
-*.png
-*.jpg
-*.jpeg
 
+
+testing files/
 *.yml
 
 *.spec
