@@ -12,6 +12,7 @@ build/
 dist/
 *.pkg
 
+pdf things/
 
 # Ignore log files
 *.log

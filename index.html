@@ -6,10 +6,21 @@
     <title>PDF Merger</title>
     <link rel="stylesheet" href="css/index-styles.css"> <!-- Ensure correct path to your CSS -->
 </head>
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-PHK7HF67QY"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'G-PHK7HF67QY');
+</script>
 <body>
     <div id="navbar-placeholder"></div> <!-- Navbar placeholder -->
 
     <!-- Download Button -->
+    <div class="app-logo">
+        <img src="Images/Mask group (1).png" alt="PDF Merger Logo">
+    </div>
     <button type="button" id="download-windows">Download Windows</button>
     <button type="button" id="download-mac">Download Mac</button>
     <div id="loading-spinner" class="spinner" style="display: none;"></div> <!-- Loading spinner -->

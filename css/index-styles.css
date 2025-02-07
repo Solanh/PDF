@@ -62,6 +62,12 @@ button:hover {
     
 }
 
+.app-logo img{
+    width: 200px;
+    height: 200px;
+    margin-bottom: 20px;
+}
+
 .container label{
     display: flex;
     flex-direction: column;
