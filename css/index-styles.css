@@ -23,8 +23,7 @@ body {
     transition: background-color 0.3s ease; /* Smooth hover effect */
 }
 
-.download-windows:hover, .download-mac\
-:hover {    
+.download-windows:hover, .download-mac:hover {    
     background-color: #45a049; /* Darker green on hover */
 }
 

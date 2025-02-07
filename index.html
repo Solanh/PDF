@@ -80,7 +80,22 @@
         }
         loadNavbar(); // Call function to load navbar
 
+        function toggleMenu() {
+            console.log("Button clicked"); // Add this line to check if the function runs
+            const imageContainer = document.getElementById("menuContent");
+            const toggleButton = document.getElementById("menuButton").querySelector("i");
+            
+            if (imageContainer.style.display === "flex") {
+                imageContainer.style.display = "none";
+                toggleButton.className = "fas fa-bars"; // Change to down arrow
+            } 
+            else {
+                imageContainer.style.display = "flex";
+                toggleButton.className = "fas fa-times"; // Change to up arrow
+            }
+
         
+        }
     </script>
 </body>
 </html>
