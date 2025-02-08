@@ -1,47 +1,47 @@
-name: Build Windows App
+# name: Build Windows App
 
 
-on:
-    push:
-      paths:
-        - '.github/workflows/build-windows.yml'
-        - '**.py'
-        - 'requirements.txt'
-    workflow_dispatch:
+# on:
+#     push:
+#       paths:
+#         - '.github/workflows/build-windows.yml'
+#         - '**.py'
+#         - 'requirements.txt'
+#     workflow_dispatch:
 
-jobs:
-  build:
-    runs-on: windows-latest
-    steps:
-      - name: Checkout Repository
-        uses: actions/checkout@v3
+# jobs:
+#   build:
+#     runs-on: windows-latest
+#     steps:
+#       - name: Checkout Repository
+#         uses: actions/checkout@v3
 
-      - name: Set Up Python
-        uses: actions/setup-python@v4
-        with:
-          python-version: "3.9"
+#       - name: Set Up Python
+#         uses: actions/setup-python@v4
+#         with:
+#           python-version: "3.9"
 
-      - name: Install Dependencies
-        run: |
-          pip install pyinstaller pdf2image pypdf2 pillow
-          echo "Installing Poppler via Chocolatey..."
-          choco install poppler --confirm
+#       - name: Install Dependencies
+#         run: |
+#           pip install pyinstaller pdf2image pypdf2 pillow
+#           echo "Installing Poppler via Chocolatey..."
+#           choco install poppler --confirm
           
-          echo "Manually setting Poppler path..."
-          echo "C:\ProgramData\chocolatey\lib\poppler\tools" >> $GITHUB_PATH
-        shell: pwsh
+#           echo "Manually setting Poppler path..."
+#           echo "C:\ProgramData\chocolatey\lib\poppler\tools" >> $GITHUB_PATH
+#         shell: pwsh
 
-      - name: Build Windows Executable
-        run: |
-          pyinstaller --windowed --onefile --clean ^
-            --add-data "C:\ProgramData\chocolatey\lib\poppler\tools;poppler" ^
-            --icon="assets/MaskGroup.ico" ^
-            --name "PDFMerger" Pdf-Merger.py
+#       - name: Build Windows Executable
+#         run: |
+#           pyinstaller --windowed --onefile --clean ^
+#             --add-data "C:\ProgramData\chocolatey\lib\poppler\tools;poppler" ^
+#             --icon="assets/MaskGroup.ico" ^
+#             --name "PDFMerger" Pdf-Merger.py
 
-        shell: cmd
+#         shell: cmd
 
-      - name: Upload Build Artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: PDFMerger-Windows
-          path: dist/PDFMerger.exe
+#       - name: Upload Build Artifact
+#         uses: actions/upload-artifact@v4
+#         with:
+#           name: PDFMerger-Windows
+#           path: dist/PDFMerger.exe
